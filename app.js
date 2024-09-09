@@ -6,6 +6,10 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+// this is to get access to the cookie ("jwt") in our request. we will install this middleware
+const cookieParser = require("cookie-parser");
+// this will compress all our responses. basically, whenever we send a text response to client. No matter if it's a json or a HTML code, with the compression package, that text will be drammatically be compressed
+const compression = require("compression");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
@@ -14,9 +18,6 @@ const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
 const bookingRouter = require("./routes/bookingRoutes");
-
-// this is to get access to the cookie ("jwt") in our request. we will install this middleware
-const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -113,6 +114,9 @@ app.use(
     ]
   })
 );
+
+// This will compression our responses that we send to the client. This will not work for images
+app.use(compression());
 
 // TEST MIDDLEWARE just for testing
 /*
