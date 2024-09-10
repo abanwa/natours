@@ -17,7 +17,7 @@ const signToken = (id) => {
 // A COOKIES is basically a small piece of text that the server can send to client.Then when the client receives a cookie, it will AUTOMATICALLY store it and  AUTOMATICALLY send it back along with all feature request to the same server. A browser automatically store a cookie that it recieves and send it back along with all feature request to that server where it came from
 
 // THE FUNCTION WILL SEND THE GENERATED TOKEN
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
   // In order to send the cookie to the browser, we basically attach it to the response obejct. we will parse the name of the cookie and the cookie we want to send (token) and the a couple of options for the cookie. The first option we will speicify is the expires property. This is  expires property will make the browser/client to delete the cookie after it has expired.
@@ -30,12 +30,16 @@ const createSendToken = (user, statusCode, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    // secure: true,
+    // comment this when we are in development
+    secure: req.secure || req.headers["x-forward-proto"] === "https",
     httpOnly: true
   };
 
   // we will set cookie secure property to true only when we are using a https: connection
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  // if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
+  // when it's deployed, especially on heroku
+  // if (req.secure || req.headers["x-forward-proto"] === "https") cookieOptions.secure = true;
 
   res.cookie("jwt", token, cookieOptions);
 
@@ -83,7 +87,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // we will await it because sendWelcome() is an async function
   await new Email(newUser, url).sendWelcome();
 
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 // we will issue the token when the email and password is correct
@@ -117,7 +121,7 @@ exports.login = catchAsync(async (req, res, next) => {
   });
   */
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 // LOGOUT
@@ -378,7 +382,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     token
   });
   */
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 // THIS IS FOR THE LOGGED IN USER TO UPDATE HIS PASSWORD WITHOUT FORGETTING IT
@@ -408,5 +412,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // NOTE: User.findByIdAndUpdate() will NOT work as intended because the validator function in the passwordConfirm will not run/work and all the "pre" save function in the userSchema will not also run/work therefore, the password will not be encrypted
   await user.save();
   // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });

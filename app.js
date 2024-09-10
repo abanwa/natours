@@ -21,6 +21,9 @@ const bookingRouter = require("./routes/bookingRoutes");
 
 const app = express();
 
+// this is for secure connection to enable the
+app.enable("trust proxy");
+
 // THIS IS USE TO RENDER A SERVER-SIDE WEBSITE USING A TEMPLATE ENGINE CALLED "PUG"
 // this will tell express the template engine we are using
 app.set("view engine", "pug");
