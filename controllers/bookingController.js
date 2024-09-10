@@ -102,7 +102,7 @@ const bookingCheckout = async (sessionData) => {
 
 // This will Handler the webhook response that we will get from stripe after the user has made payment. This will heklp to actually validate whether the payment was actually VERY SUCCESSFUL or not and prevent scam
 // This function will be called when the payment is successful because we specified this route in stripe webhook /webhook-checkout
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = async (req, res, next) => {
   let event;
   try {
     // we will read the stripe signature coming the from the webhook request (response that stripe sent) headers
@@ -122,7 +122,7 @@ exports.webhookCheckout = (req, res, next) => {
   // we want to handle the webhook response form completed checkout session "check.session.completed"
   if (event.type === "checkout.session.completed") {
     // we will send back this response to stripe
-    bookingCheckout(event.data.object);
+    await bookingCheckout(event.data.object);
   }
 
   res.status(200).json({
