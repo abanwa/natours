@@ -1,5 +1,6 @@
 const Stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const Tour = require("../models/tourModel");
+const User = require("../models/userModel");
 const Booking = require("../models/bookingModel");
 const catchAsync = require("../utils/catchAsync");
 const factory = require("./handlerFactory");
@@ -20,7 +21,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
       user_email: req.user.email,
       tour_id: req.params.tourId
     },
-    success_url: `${req.protocol}://${req.get("host")}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+    // success_url: `${req.protocol}://${req.get("host")}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+    success_url: `${req.protocol}://${req.get("host")}/my-tours`,
     cancel_url: `${req.protocol}://${req.get("host")}/tour/${tour.slug}`, // user will be redirected to this page if they cancel the payment,
     customer_email: req.user.email, // req.user.email is coming from the protect middleware,
     client_reference_id: req.params.tourId, // this is the id of the tour we want to book. we will use this id and the user id through (user email) to get this session we create
@@ -68,6 +70,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
 // THIS WILL CREATE THE NEW BOOKING IN OUR DATABASE AFTER THE PAYMENT IS SUCCESSFUL
 // This is only TEMPORARY, because it's UNSECURED: everyone can make bookings without paying
+/*
 exports.createBookingCheckout = catchAsync(async (req, res, next) => {
   const { tour, user, price } = req.query;
   // if there is no tourId and userId and price, just go to the next middleware
@@ -81,6 +84,49 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
   // ${req.protocol}://${req.get("host")}/?tour=cd46gegdeyedye84&user=gede48958594hrbrur84r&price=400
   res.redirect(req.originalUrl.split("?")[0]);
 });
+
+*/
+
+// This is a regular function / sessionData is the response object from stripe
+const bookingCheckout = async (sessionData) => {
+  const tour = sessionData.client_reference_id;
+  // we will use the user email we used to createthe checkout session to get the user id from the User table. the information we set in the checkout session when creating the checkout is what we will also get from the webhook req.body (stripe webhook response). that is event.data.object
+  // OR {email: sessionData.meta?.user_email}. when we get the user, we will get the id and store it as user
+  const user = (await User.findOne({ email: sessionData.customer_email })).id;
+  const price = sessionData.line_items[0].price_data.unit_amount / 100; // we diivided by 100 to get the actual exact dollar amount back. we muliplied it by 100 whne creating the session in the createCheckoutSession
+
+  await Booking.create({ tour, user, price });
+};
+
+// This will Handler the webhook response that we will get from stripe after the user has made payment. This will heklp to actually validate whether the payment was actually VERY SUCCESSFUL or not and prevent scam
+// This function will be called when the payment is successful because we specified this route in stripe webhook /webhook-checkout
+exports.webhookCheckout = (req, res, next) => {
+  let event;
+  try {
+    // we will read the stripe signature coming the from the webhook request (response that stripe sent) headers
+    const signature = req.headers["stripe-signature"];
+
+    // Remember, the request body coming from the stripe (stripe webhook response) must be in the raw form
+    // this will help to validatethe request body (stripe webhook response) coming from stripe
+    event = Stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send("WEBHOOK ERROR ", err);
+  }
+
+  // we want to handle the webhook response form completed checkout session "check.session.completed"
+  if (event.type === "checkout.session.completed") {
+    // we will send back this response to stripe
+    bookingCheckout(event.data.object);
+  }
+
+  res.status(200).json({
+    received: true
+  });
+};
 
 exports.createBooking = factory.createOne(Booking);
 exports.getBooking = factory.getOne(Booking);
