@@ -51,7 +51,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
-            images: [`https://www.natours.dev/img/tours/${tour.imageCover}`]
+            images: [
+              `${req.protocol}://${req.get("host")}/img/tours/${tour.imageCover}`
+            ]
           },
           unit_amount: tour.price * 100 // Amount in cents
         },
@@ -114,7 +116,7 @@ exports.webhookCheckout = (req, res, next) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    return res.status(400).send("WEBHOOK ERROR ", err);
+    return res.status(400).send("WEBHOOK ERROR " + err);
   }
 
   // we want to handle the webhook response form completed checkout session "check.session.completed"

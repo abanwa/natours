@@ -29,7 +29,7 @@ const app = express();
 Evaluate the Need for trust proxy:
 Determine whether you actually need to enable trust proxy. This setting is often necessary when your application is behind a reverse proxy (like Nginx, Heroku, etc.). If you are not using a proxy, you might want to disable it. i hosted my app in render.com that is why i commenetd the app.enable("trust proxy")
 */
-// app.enable("trust proxy");
+app.enable("trust proxy");
 
 // THIS IS USE TO RENDER A SERVER-SIDE WEBSITE USING A TEMPLATE ENGINE CALLED "PUG"
 // this will tell express the template engine we are using
