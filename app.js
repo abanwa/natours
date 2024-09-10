@@ -10,6 +10,8 @@ const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 // this will compress all our responses. basically, whenever we send a text response to client. No matter if it's a json or a HTML code, with the compression package, that text will be drammatically be compressed
 const compression = require("compression");
+// to allow cross origin taht is to allow access from other websites
+const cors = require("cors");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
@@ -21,7 +23,7 @@ const bookingRouter = require("./routes/bookingRoutes");
 
 const app = express();
 
-// this is for secure connection to enable the
+// this is for secure connection to enable the. it helps so that the headers['x-proto..] will be accessed in the authController.js createToken/sendToken() function
 app.enable("trust proxy");
 
 // THIS IS USE TO RENDER A SERVER-SIDE WEBSITE USING A TEMPLATE ENGINE CALLED "PUG"
@@ -31,6 +33,27 @@ app.set("view engine", "pug");
 // our pug system are actually called views in express. That is because the template are the Views in our Model View Control (MVC) system
 // In order to define which folder our views are actually located in, we will define the path
 app.set("views", path.join(__dirname, "views"));
+
+// ALLOW CROSS ORIGIN
+// Implement CORS
+// Access-Control-ALlow-Origin *
+// app.use(cors({
+// origin: 'https://www.natours.com'
+//}))
+app.use(cors());
+
+// this is to allow a preflight phase for all the routes
+// Handle preflight requests for all origins. this checks if the options is enabled for the request
+// example is
+/*
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: https://another-domain.com
+Access-Control-Allow-Methods: POST, GET, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Max-Age: 3600
+*/
+app.options("*", cors());
+// app.options("/api/v1/tours/:id", cors());
 
 // This is how to serve a static file. when our request url can not be found in the routes, this will be the default url. the public folder will be the root
 // SERVING STATIC FILES
