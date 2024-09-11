@@ -60,6 +60,16 @@ Access-Control-Max-Age: 3600
 app.options("*", cors());
 // app.options("/api/v1/tours/:id", cors());
 
+// Here, if we convert it to stripe response from webhook to json, the validation will not match, so we will use it as the raw response. the raw only applies to the stripe webhook response
+// we wrote it this way so that the response from stripe to this our webhook enpoint will not be converted to json
+// app.use("/webhook-checkout", express.raw({ type: "*/*" }));
+// if we are to use the above one, in the bookingRoutes, we will still define it as router.post("/webhook-checkout", bookingController.webhookCheckout);
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  bookingController.webhookCheckout
+);
+
 // This is how to serve a static file. when our request url can not be found in the routes, this will be the default url. the public folder will be the root
 // SERVING STATIC FILES
 // app.use(express.static(`${__dirname}/public`));
@@ -110,16 +120,6 @@ const limiter = rateLimit({
 
 // since we want to apply this limiter only to the /api routes, we will include  it. it will affect all the routes that starts /api
 app.use("/api", limiter);
-
-// Here, if we convert it to stripe response from webhook to json, the validation will not match, so we will use it as the raw response. the raw only applies to the stripe webhook response
-// we wrote it this way so that the response from stripe to this our webhook enpoint will not be converted to json
-// app.use("/webhook-checkout", express.raw({ type: "*/*" }));
-// if we are to use the above one, in the bookingRoutes, we will still define it as router.post("/webhook-checkout", bookingController.webhookCheckout);
-app.post(
-  "/webhook-checkout",
-  express.raw({ type: "application/json" }),
-  bookingController.webhookCheckout
-);
 
 // This is a middleware. This will modify the incoming data. This will add the data coming from the request thatwas sent to the express req body
 // BODY PARSER, READING DATA FROM THE BODY INTO REQ.BODY (req.body)
