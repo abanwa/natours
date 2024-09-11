@@ -117,8 +117,10 @@ exports.webhookCheckout = async (req, res, next) => {
       signature,
       STRIPE_WEBHOOK_SECRET
     );
+    console.log("stripe try " + event);
   } catch (err) {
     console.log("stripe error " + err);
+    console.log("stripe catch " + event);
     return res.status(400).send("WEBHOOK ERROR " + err);
   }
 
