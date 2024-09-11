@@ -105,15 +105,19 @@ const bookingCheckout = async (sessionData) => {
 exports.webhookCheckout = async (req, res, next) => {
   let event;
   try {
-    // we will read the stripe signature coming the from the webhook request (response that stripe sent) headers
+    // we will read the stripe signature coming the from the webhook request (response that stripe sent) headers stripe-signature
     const signature = req.headers["stripe-signature"];
+    console.log("signature " + signature);
+    const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+    console.log("stripe webhook secret " + STRIPE_WEBHOOK_SECRET);
+    console.log("req_body " + req.body);
 
     // Remember, the request body coming from the stripe (stripe webhook response) must be in the raw form
     // this will help to validatethe request body (stripe webhook response) coming from stripe
     event = Stripe.webhooks.constructEvent(
       req.body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     return res.status(400).send("WEBHOOK ERROR " + err);
