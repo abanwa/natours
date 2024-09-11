@@ -94,8 +94,11 @@ const bookingCheckout = async (sessionData) => {
   const tour = sessionData.client_reference_id;
   // we will use the user email we used to createthe checkout session to get the user id from the User table. the information we set in the checkout session when creating the checkout is what we will also get from the webhook req.body (stripe webhook response). that is event.data.object
   // OR {email: sessionData.meta?.user_email}. when we get the user, we will get the id and store it as user
-  const user = (await User.findOne({ email: sessionData.customer_email })).id;
-  const price = sessionData.line_items[0].price_data.unit_amount / 100; // we diivided by 100 to get the actual exact dollar amount back. we muliplied it by 100 whne creating the session in the createCheckoutSession
+  const user = (await User.findOne({ email: sessionData.customer_email }))._id;
+  // const pricee = sessionData.line_items[0].price_data.unit_amount / 100; // we diivided by 100 to get the actual exact dollar amount back. we muliplied it by 100 whne creating the session in the createCheckoutSession
+
+  // This amount_total is coming from stripe. it is the total amount of what was paid for that we sent when we created checkoutSession() in unit_amount
+  const price = sessionData.amount_total / 100;
 
   await Booking.create({ tour, user, price });
 };
