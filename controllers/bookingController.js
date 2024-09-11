@@ -119,7 +119,9 @@ exports.webhookCheckout = async (req, res, next) => {
     );
   } catch (err) {
     console.log("stripe error " + err);
-    return res.status(400).send("WEBHOOK ERROR " + err);
+    return res
+      .status(400)
+      .send("WEBHOOK ERROR " + err + " req body is " + req.body);
   }
 
   // we want to handle the webhook response form completed checkout session "check.session.completed"
