@@ -114,12 +114,15 @@ exports.webhookCheckout = async (req, res, next) => {
 
     // Remember, the request body coming from the stripe (stripe webhook response) must be in the raw form
     // this will help to validatethe request body (stripe webhook response) coming from stripe
+
     event = Stripe.webhooks.constructEvent(
       req.body,
       signature,
       STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
+    console.log("EVENT CREATED " + event);
+    console.log("stripe error " + err);
     return res.status(400).send("WEBHOOK ERROR " + err);
   }
 

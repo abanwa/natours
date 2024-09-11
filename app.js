@@ -117,7 +117,7 @@ app.use("/api", limiter);
 // if we are to use the above one, in the bookingRoutes, we will still define it as router.post("/webhook-checkout", bookingController.webhookCheckout);
 app.post(
   "/webhook-checkout",
-  express.raw({ type: "*/*" }),
+  express.raw({ type: "application/json" }),
   bookingController.webhookCheckout
 );
 
