@@ -24,21 +24,6 @@ const bookingController = require("./controllers/bookingController");
 
 const app = express();
 
-// this is for secure connection to enable the. it helps so that the headers['x-proto..] will be accessed in the authController.js createToken/sendToken() function
-/*
-Evaluate the Need for trust proxy:
-Determine whether you actually need to enable trust proxy. This setting is often necessary when your application is behind a reverse proxy (like Nginx, Heroku, etc.). If you are not using a proxy, you might want to disable it. i hosted my app in render.com that is why i commenetd the app.enable("trust proxy")
-*/
-app.enable("trust proxy");
-
-// THIS IS USE TO RENDER A SERVER-SIDE WEBSITE USING A TEMPLATE ENGINE CALLED "PUG"
-// this will tell express the template engine we are using
-app.set("view engine", "pug");
-// we will define where these fields are located in our filesystem
-// our pug system are actually called views in express. That is because the template are the Views in our Model View Control (MVC) system
-// In order to define which folder our views are actually located in, we will define the path
-app.set("views", path.join(__dirname, "views"));
-
 // ALLOW CROSS ORIGIN
 // Implement CORS
 // Access-Control-ALlow-Origin *
@@ -66,9 +51,24 @@ app.options("*", cors());
 // if we are to use the above one, in the bookingRoutes, we will still define it as router.post("/webhook-checkout", bookingController.webhookCheckout);
 app.post(
   "/webhook-checkout",
-  express.raw({ type: "application/json" }),
+  express.raw({ type: "*/*" }),
   bookingController.webhookCheckout
 );
+
+// this is for secure connection to enable the. it helps so that the headers['x-proto..] will be accessed in the authController.js createToken/sendToken() function
+/*
+Evaluate the Need for trust proxy:
+Determine whether you actually need to enable trust proxy. This setting is often necessary when your application is behind a reverse proxy (like Nginx, Heroku, etc.). If you are not using a proxy, you might want to disable it. i hosted my app in render.com that is why i commenetd the app.enable("trust proxy")
+*/
+app.enable("trust proxy");
+
+// THIS IS USE TO RENDER A SERVER-SIDE WEBSITE USING A TEMPLATE ENGINE CALLED "PUG"
+// this will tell express the template engine we are using
+app.set("view engine", "pug");
+// we will define where these fields are located in our filesystem
+// our pug system are actually called views in express. That is because the template are the Views in our Model View Control (MVC) system
+// In order to define which folder our views are actually located in, we will define the path
+app.set("views", path.join(__dirname, "views"));
 
 // This is how to serve a static file. when our request url can not be found in the routes, this will be the default url. the public folder will be the root
 // SERVING STATIC FILES
