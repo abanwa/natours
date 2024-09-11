@@ -5,6 +5,8 @@ const bookingController = require("../controllers/bookingController");
 
 const router = express.Router();
 
+router.use(viewsController.alerts);
+
 // This will look for the base file in the view folder when the route is "/"
 // it will go into the view folder and look for the file name "overview"
 // This is also the route that will be called after the user booking payment is successful

@@ -22,7 +22,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
       tour_id: req.params.tourId
     },
     // success_url: `${req.protocol}://${req.get("host")}/my-tours/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
-    success_url: `${req.protocol}://${req.get("host")}/my-tours`,
+    success_url: `${req.protocol}://${req.get("host")}/my-tour?alert=booking`,
     cancel_url: `${req.protocol}://${req.get("host")}/tour/${tour.slug}`, // user will be redirected to this page if they cancel the payment,
     customer_email: req.user.email, // req.user.email is coming from the protect middleware,
     client_reference_id: req.params.tourId, // this is the id of the tour we want to book. we will use this id and the user id through (user email) to get this session we create
@@ -119,9 +119,7 @@ exports.webhookCheckout = async (req, res, next) => {
     );
   } catch (err) {
     console.log("stripe error " + err);
-    return res
-      .status(400)
-      .send("WEBHOOK ERROR " + err + " req body is " + req.body);
+    return res.status(400).send("WEBHOOK ERROR " + err);
   }
 
   // we want to handle the webhook response form completed checkout session "check.session.completed"
