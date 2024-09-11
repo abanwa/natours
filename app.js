@@ -226,12 +226,3 @@ app.use(globalErrorHandler);
 
 // 4) START UP A SERVER
 module.exports = app;
-ys considered as an error
-  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
-});
-
-// EXPRESS MIDDLEWARE ERROR HANDLING
-app.use(globalErrorHandler);
-
-// 4) START UP A SERVER
-module.exports = app;
